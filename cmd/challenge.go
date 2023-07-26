@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/justmeandopensource/numboz/internal/challenges"
@@ -26,12 +27,19 @@ var challengeCmd = &cobra.Command{
 
 		switch strings.ToLower(challengeType) {
 		case "mixed":
-			challenges.Mixed(questions, digits)
-			challenges.PrintChallengeReport()
+			for i := 1; i < questions+1; i++ {
+				common.ClearTerminal()
+				fmt.Printf("Question [%v/%v]\n\n", i, questions)
+				challenges.Start(*common.PickRandomChallenge(), digits)
+			}
 		default:
-			challenges.Start(challengeType, questions, digits)
-			challenges.PrintChallengeReport()
+			for i := 1; i < questions+1; i++ {
+				common.ClearTerminal()
+				fmt.Printf("Question [%v/%v]\n\n", i, questions)
+				challenges.Start(challengeType, digits)
+			}
 		}
+		challenges.PrintChallengeReport()
 	},
 }
 
