@@ -2,16 +2,18 @@ package challenges
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
+	"github.com/alexeyco/simpletable"
 	"github.com/justmeandopensource/numboz/internal/common"
 )
 
 type challenge struct {
-	Question       string
-	ExpectedResult int
-	ActualResult   int
-	Result         string
+	Question     string
+	YourAnswer   int
+	ActualAnswer int
+	Result       string
 }
 
 var challengeReport []challenge
@@ -19,7 +21,7 @@ var challengeReport []challenge
 func Start(challengeType string, digits int) {
 
 	var question string
-	var expectedResult, actualResult int
+	var yourAnswer, actualAnswer int
 	result := "FAIL"
 
 	switch challengeType {
@@ -29,8 +31,8 @@ func Start(challengeType string, digits int) {
 		op2 := common.GenerateRandomNumber(digits)
 		question = fmt.Sprintf("%v + %v = ", op1, op2)
 		fmt.Print(question)
-		fmt.Scan(&expectedResult)
-		actualResult = op1 + op2
+		fmt.Scan(&yourAnswer)
+		actualAnswer = op1 + op2
 
 	case "subtraction":
 		op1 := common.GenerateRandomNumber(digits)
@@ -43,35 +45,35 @@ func Start(challengeType string, digits int) {
 		}
 		question = fmt.Sprintf("%v - %v = ", num1, num2)
 		fmt.Print(question)
-		fmt.Scan(&expectedResult)
-		actualResult = num1 - num2
+		fmt.Scan(&yourAnswer)
+		actualAnswer = num1 - num2
 
 	case "multiplication":
 		op1 := common.GenerateRandomNumber(digits)
 		op2 := common.GenerateRandomNumber(1) + 1
 		question = fmt.Sprintf("%v x %v = ", op1, op2)
 		fmt.Print(question)
-		fmt.Scan(&expectedResult)
-		actualResult = op1 * op2
+		fmt.Scan(&yourAnswer)
+		actualAnswer = op1 * op2
 
 	case "division":
 		op1 := common.GenerateRandomNumber(digits)
 		op2 := common.GenerateRandomNumber(1) + 1
 		question = fmt.Sprintf("%v / %v = ", op1, op2)
 		fmt.Print(question)
-		fmt.Scan(&expectedResult)
-		actualResult = op1 / op2
+		fmt.Scan(&yourAnswer)
+		actualAnswer = op1 / op2
 	}
 
-	if expectedResult == actualResult {
+	if yourAnswer == actualAnswer {
 		result = "PASS"
 	}
 
 	c := challenge{
-		Question:       question,
-		ExpectedResult: expectedResult,
-		ActualResult:   actualResult,
-		Result:         result,
+		Question:     question,
+		YourAnswer:   yourAnswer,
+		ActualAnswer: actualAnswer,
+		Result:       result,
 	}
 	challengeReport = append(challengeReport, c)
 }
@@ -81,14 +83,34 @@ func Mixed(digits int) {
 }
 
 func PrintChallengeReport() {
+
 	common.ClearTerminal()
-	for i, record := range challengeReport {
-		fmt.Printf("Q%v\t%v\t%v\t%v\t%v\n",
-			i+1,
-			strings.Replace(record.Question, "=", "", -1),
-			record.ExpectedResult,
-			record.ActualResult,
-			record.Result,
-		)
+
+	table := simpletable.New()
+
+	table.Header = &simpletable.Header{
+		Cells: []*simpletable.Cell{
+			{Text: "#"},
+			{Text: "QUESTION"},
+			{Text: "ACTUAL ANSWER"},
+			{Text: "YOUR ANSWER"},
+			{Text: "RESULT"},
+		},
 	}
+
+	for i, record := range challengeReport {
+
+		r := []*simpletable.Cell{
+			{Text: strconv.Itoa(i + 1)},
+			{Text: strings.Replace(record.Question, "=", "", -1)},
+			{Text: strconv.Itoa(record.YourAnswer)},
+			{Text: strconv.Itoa(record.ActualAnswer)},
+			{Text: record.Result},
+		}
+
+		table.Body.Cells = append(table.Body.Cells, r)
+	}
+
+	table.SetStyle(simpletable.StyleUnicode)
+	fmt.Println(table.String())
 }
