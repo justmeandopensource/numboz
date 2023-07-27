@@ -14,10 +14,10 @@ var challengeTypes = []string{"addition", "subtraction", "multiplication", "divi
 
 func ValidateParams(challengeType string, digits int) {
 
-	challengeTypes = append(challengeTypes, "mixed")
+	types := append(challengeTypes, "mixed")
 	validChallengeType := false
 
-	for _, item := range challengeTypes {
+	for _, item := range types {
 		if challengeType == item {
 			validChallengeType = true
 			break
