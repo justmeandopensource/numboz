@@ -151,7 +151,7 @@ func generateReportTableBody(allpass bool, table *simpletable.Table) {
 
 			r := []*simpletable.Cell{
 				{Text: strconv.Itoa(i + 1)},
-				{Text: record.Result},
+				{Text: common.ColorizeGreen(record.Result)},
 				{Text: record.Duration.String()},
 				{Text: strings.Replace(record.Question, "=", "", -1)},
 			}
@@ -161,16 +161,23 @@ func generateReportTableBody(allpass bool, table *simpletable.Table) {
 	} else {
 		for i, record := range challengeReport {
 
-			var yourAnswer, actualAnswer string
+			var (
+				result       string
+				yourAnswer   string
+				actualAnswer string
+			)
 
 			if record.Result == "FAIL" {
-				yourAnswer = strconv.Itoa(record.YourAnswer)
-				actualAnswer = strconv.Itoa(record.ActualAnswer)
+				result = common.ColorizeRed(record.Result)
+				yourAnswer = common.ColorizeRed(strconv.Itoa(record.YourAnswer))
+				actualAnswer = common.ColorizeGreen(strconv.Itoa(record.ActualAnswer))
+			} else {
+				result = common.ColorizeGreen(record.Result)
 			}
 
 			r := []*simpletable.Cell{
 				{Text: strconv.Itoa(i + 1)},
-				{Text: record.Result},
+				{Text: result},
 				{Text: record.Duration.String()},
 				{Text: strings.Replace(record.Question, "=", "", -1)},
 				{Text: yourAnswer},
