@@ -23,8 +23,6 @@ var challengeCmd = &cobra.Command{
 
 		common.ValidateParams(challengeType, digits)
 
-		common.ClearTerminal()
-
 		switch strings.ToLower(challengeType) {
 		case "mixed":
 			for i := 1; i < questions+1; i++ {
@@ -39,6 +37,7 @@ var challengeCmd = &cobra.Command{
 				challenges.Start(challengeType, digits)
 			}
 		}
+
 		challenges.PrintChallengeReport()
 	},
 }

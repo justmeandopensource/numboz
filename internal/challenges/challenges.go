@@ -118,6 +118,10 @@ func PrintChallengeReport() {
 
 	table.SetStyle(simpletable.StyleUnicode)
 	fmt.Println(table.String())
+
+	totalCorrect, totalTimeTaken := getScoreStats()
+
+	fmt.Println(common.ColorizeBlue(fmt.Sprintf("%v correct in %v", totalCorrect, totalTimeTaken)))
 }
 
 func generateReportTableHeader(allpass bool, table *simpletable.Table) {
@@ -187,4 +191,21 @@ func generateReportTableBody(allpass bool, table *simpletable.Table) {
 			table.Body.Cells = append(table.Body.Cells, r)
 		}
 	}
+}
+
+func getScoreStats() (int, string) {
+
+	var (
+		totalCorrect   int
+		totalTimeTaken time.Duration
+	)
+
+	for _, record := range challengeReport {
+		if record.Result == "PASS" {
+			totalCorrect += 1
+		}
+		totalTimeTaken += record.Duration
+	}
+
+	return totalCorrect, totalTimeTaken.String()
 }
