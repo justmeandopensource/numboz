@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/alexeyco/simpletable"
 	"github.com/justmeandopensource/numboz/internal/common"
@@ -14,15 +15,20 @@ type challenge struct {
 	YourAnswer   int
 	ActualAnswer int
 	Result       string
+	Duration     time.Duration
 }
 
 var challengeReport []challenge
 
 func Start(challengeType string, digits int) {
 
-	var question string
-	var yourAnswer, actualAnswer int
-	result := "FAIL"
+	var (
+		question     string
+		yourAnswer   int
+		actualAnswer int
+		result       string
+		duration     time.Duration
+	)
 
 	switch challengeType {
 
@@ -31,7 +37,9 @@ func Start(challengeType string, digits int) {
 		op2 := common.GenerateRandomNumber(digits)
 		question = fmt.Sprintf("%v + %v = ", op1, op2)
 		fmt.Print(question)
+		startTime := time.Now()
 		fmt.Scan(&yourAnswer)
+		duration = time.Since(startTime).Round(time.Second)
 		actualAnswer = op1 + op2
 
 	case "subtraction":
@@ -45,7 +53,9 @@ func Start(challengeType string, digits int) {
 		}
 		question = fmt.Sprintf("%v - %v = ", num1, num2)
 		fmt.Print(question)
+		startTime := time.Now()
 		fmt.Scan(&yourAnswer)
+		duration = time.Since(startTime).Round(time.Second)
 		actualAnswer = num1 - num2
 
 	case "multiplication":
@@ -53,7 +63,9 @@ func Start(challengeType string, digits int) {
 		op2 := common.GenerateRandomNumber(1) + 1
 		question = fmt.Sprintf("%v x %v = ", op1, op2)
 		fmt.Print(question)
+		startTime := time.Now()
 		fmt.Scan(&yourAnswer)
+		duration = time.Since(startTime).Round(time.Second)
 		actualAnswer = op1 * op2
 
 	case "division":
@@ -61,12 +73,16 @@ func Start(challengeType string, digits int) {
 		op2 := common.GenerateRandomNumber(1) + 1
 		question = fmt.Sprintf("%v / %v = ", op1, op2)
 		fmt.Print(question)
+		startTime := time.Now()
 		fmt.Scan(&yourAnswer)
+		duration = time.Since(startTime).Round(time.Second)
 		actualAnswer = op1 / op2
 	}
 
 	if yourAnswer == actualAnswer {
 		result = "PASS"
+	} else {
+		result = "FAIL"
 	}
 
 	c := challenge{
@@ -74,6 +90,7 @@ func Start(challengeType string, digits int) {
 		YourAnswer:   yourAnswer,
 		ActualAnswer: actualAnswer,
 		Result:       result,
+		Duration:     duration,
 	}
 	challengeReport = append(challengeReport, c)
 }
@@ -86,31 +103,81 @@ func PrintChallengeReport() {
 
 	common.ClearTerminal()
 
+	allPass := true
+
+	for _, record := range challengeReport {
+		if record.Result == "FAIL" {
+			allPass = false
+		}
+	}
+
 	table := simpletable.New()
 
-	table.Header = &simpletable.Header{
-		Cells: []*simpletable.Cell{
-			{Text: "#"},
-			{Text: "QUESTION"},
-			{Text: "ACTUAL ANSWER"},
-			{Text: "YOUR ANSWER"},
-			{Text: "RESULT"},
-		},
-	}
-
-	for i, record := range challengeReport {
-
-		r := []*simpletable.Cell{
-			{Text: strconv.Itoa(i + 1)},
-			{Text: strings.Replace(record.Question, "=", "", -1)},
-			{Text: strconv.Itoa(record.YourAnswer)},
-			{Text: strconv.Itoa(record.ActualAnswer)},
-			{Text: record.Result},
-		}
-
-		table.Body.Cells = append(table.Body.Cells, r)
-	}
+	generateReportTableHeader(allPass, table)
+	generateReportTableBody(allPass, table)
 
 	table.SetStyle(simpletable.StyleUnicode)
 	fmt.Println(table.String())
+}
+
+func generateReportTableHeader(allpass bool, table *simpletable.Table) {
+
+	if allpass {
+		table.Header = &simpletable.Header{
+			Cells: []*simpletable.Cell{
+				{Text: "#"},
+				{Text: "RESULT"},
+				{Text: "TIME TAKEN"},
+				{Text: "QUESTION"},
+			},
+		}
+	} else {
+		table.Header = &simpletable.Header{
+			Cells: []*simpletable.Cell{
+				{Text: "#"},
+				{Text: "RESULT"},
+				{Text: "TIME TAKEN"},
+				{Text: "QUESTION"},
+				{Text: "YOUR ANSWER"},
+				{Text: "ACTUAL ANSWER"},
+			},
+		}
+	}
+}
+
+func generateReportTableBody(allpass bool, table *simpletable.Table) {
+	if allpass {
+		for i, record := range challengeReport {
+
+			r := []*simpletable.Cell{
+				{Text: strconv.Itoa(i + 1)},
+				{Text: record.Result},
+				{Text: record.Duration.String()},
+				{Text: strings.Replace(record.Question, "=", "", -1)},
+			}
+
+			table.Body.Cells = append(table.Body.Cells, r)
+		}
+	} else {
+		for i, record := range challengeReport {
+
+			var yourAnswer, actualAnswer string
+
+			if record.Result == "FAIL" {
+				yourAnswer = strconv.Itoa(record.YourAnswer)
+				actualAnswer = strconv.Itoa(record.ActualAnswer)
+			}
+
+			r := []*simpletable.Cell{
+				{Text: strconv.Itoa(i + 1)},
+				{Text: record.Result},
+				{Text: record.Duration.String()},
+				{Text: strings.Replace(record.Question, "=", "", -1)},
+				{Text: yourAnswer},
+				{Text: actualAnswer},
+			}
+
+			table.Body.Cells = append(table.Body.Cells, r)
+		}
+	}
 }
